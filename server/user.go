@@ -3,10 +3,9 @@ package server
 import (
 	"time"
 	"net/http"
-	"fmt"
+	// "fmt"
 
-	"github.com/user-boiler/models"
-
+	"github.com/user-base/models"
 	"github.com/labstack/echo"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -14,14 +13,14 @@ import (
 func CreateUser(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
-
+	
 	user := models.NewUser(username, password)
 	err := user.Save()
 	if err != nil {
-		fmt.Println(err)
+		return c.JSON(http.StatusForbidden, "We're sorry! There's already a user with that username..")
 	}
 
-	return err
+	return c.JSON(http.StatusOK, user)
 }
 
 func GetUser(c echo.Context) error {

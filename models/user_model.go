@@ -2,9 +2,10 @@ package models
 
 import (
 	"time"
+	"fmt"
 
 	"labix.org/v2/mgo/bson"
-	"github.com/user-boiler/store"
+	"github.com/user-base/store"
 )
 
 type User struct {
@@ -28,6 +29,7 @@ func (u *User) Save() error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
@@ -36,11 +38,13 @@ func (u *User) Save() error {
 		panic(err)
 	}
 
-	err = collection.Insert(&User{Id: u.Id,
+	err = collection.Insert(&User{
+		Id: u.Id,
 		Timestamp: u.Timestamp,
 		Username: u.Username,
 		Password: u.Password})
 	if err != nil {
+		fmt.Println("error!", err)
 		return err
 	}
 
