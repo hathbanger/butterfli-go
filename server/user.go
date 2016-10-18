@@ -3,7 +3,6 @@ package server
 import (
 	"time"
 	"net/http"
-	// "fmt"
 
 	"github.com/user-base/models"
 	"github.com/labstack/echo"
