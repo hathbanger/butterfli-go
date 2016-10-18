@@ -32,6 +32,7 @@ func Run() {
 	r.GET("", restricted)
 	e.GET("/user/:username", GetUser)
 	e.POST("/user", CreateUser)
+	e.GET("/users", GetAllUsers)
 	e.POST("/login", Login)
 
 

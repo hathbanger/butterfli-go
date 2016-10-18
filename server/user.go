@@ -66,3 +66,11 @@ func Login(c echo.Context) error {
 	return echo.ErrUnauthorized
 }
 
+func GetAllUsers(c echo.Context) error {
+	users, err := models.GetAllUsers()
+	if err != nil {
+		panic(err)
+	}
+
+	return c.JSON(http.StatusOK, users)
+}

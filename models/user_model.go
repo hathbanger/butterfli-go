@@ -69,3 +69,24 @@ func FindUser(username string) (User, error) {
 
 	return user, err
 }
+
+
+func GetAllUsers() ([]*User, error){
+
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection, err := store.ConnectToCollection(session, "users")
+	if err != nil {
+		panic(err)
+	}
+
+	users := []*User{}
+
+	err = collection.Find(nil).All(&users)
+
+	return users, err
+}
