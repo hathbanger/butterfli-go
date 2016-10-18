@@ -29,7 +29,6 @@ func (u *User) Save() error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 
@@ -44,7 +43,6 @@ func (u *User) Save() error {
 		Username: u.Username,
 		Password: u.Password})
 	if err != nil {
-		fmt.Println("error!", err)
 		return err
 	}
 

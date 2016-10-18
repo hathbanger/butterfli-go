@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	// "log"
 
 
 	"github.com/labstack/echo"
@@ -34,7 +33,6 @@ func Run() {
 	e.GET("/user/:username", GetUser)
 	e.POST("/user", CreateUser)
 	e.POST("/login", Login)
-	// e.GET("/ws", standard.WrapHandler(hello()))
 
 
 	fmt.Println("Server now running on port: 1323")
