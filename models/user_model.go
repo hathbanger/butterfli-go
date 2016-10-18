@@ -2,7 +2,7 @@ package models
 
 import (
 	"time"
-	"fmt"
+	// "fmt"
 
 	"labix.org/v2/mgo/bson"
 	"github.com/user-base/store"
