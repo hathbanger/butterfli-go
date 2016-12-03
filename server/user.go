@@ -4,7 +4,7 @@ import (
 	"time"
 	"net/http"
 
-	"github.com/user-base/models"
+	"github.com/butterfli-go/models"
 	"github.com/labstack/echo"
 	"github.com/dgrijalva/jwt-go"
 )

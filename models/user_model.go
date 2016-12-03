@@ -5,7 +5,7 @@ import (
 	// "fmt"
 
 	"labix.org/v2/mgo/bson"
-	"github.com/user-base/store"
+	"github.com/butterfli-go/store"
 )
 
 type User struct {

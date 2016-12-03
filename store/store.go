@@ -34,3 +34,39 @@ func ConnectToCollection(session *mgo.Session, collection_str string) (*mgo.Coll
 
 	return collection, err
 }
+
+func ConnectToPostsCollection(session *mgo.Session, collection_str string) (*mgo.Collection, error) {
+	collection := session.DB("test").C(collection_str)
+	index := mgo.Index{
+		Key:        []string{"imgurl"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := collection.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	return collection, err
+}
+
+func ConnectToSearchTermCollection(session *mgo.Session, collection_str string) (*mgo.Collection, error) {
+	collection := session.DB("test").C(collection_str)
+	index := mgo.Index{
+		Key:        []string{"text"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := collection.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	return collection, err
+}
