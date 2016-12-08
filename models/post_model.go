@@ -18,17 +18,19 @@ type Post struct {
 	Id 		bson.ObjectId          `json:"id",bson:"_id,omitempty"`
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
+	Account	string           `json:"account",bson:"account,omitempty"`
 	Imgurl		string           `json:"imgurl",bson:"imgurl,omitempty"`
 	SearchTerm	string           `json:"searchterm",bson:"searchterm,omitempty"`
 	Approved	bool           `json:"approved",bson:"approved,omitempty"`
 	Rated	bool           `json:"rated",bson:"rated,omitempty"`
 }
 
-func NewPost(username string, searchTerm string, imgUrl string) *Post {
+func NewPost(username string, account string, searchTerm string, imgUrl string) *Post {
 	p := new(Post)
 	p.Id = bson.NewObjectId()
 	p.Timestamp = time.Now()
 	p.Username = username
+	p.Account = account
 	p.SearchTerm = searchTerm
 	p.Imgurl = imgUrl
 	p.Approved = false
@@ -50,16 +52,30 @@ func (p *Post) Save() error {
 		panic(err)
 	}
 
-	err = collection.Insert(&Post{
+	post := &Post{
 		Id: p.Id,
 		Timestamp: p.Timestamp,
 		Username: p.Username,
+		Account: p.Account,
 		SearchTerm: p.SearchTerm,
 		Imgurl: p.Imgurl,
 		Approved: p.Approved,
-		Rated: p.Rated})
+		Rated: p.Rated}
 
-	//fmt.Print(Post)
+	err = collection.Insert(post)
+
+	fmt.Print(post)
+
+	collection2, err := store.ConnectToAccountsCollection(session, "accounts")
+	if err != nil {
+		panic(err)
+	}
+
+	account, err := FindAccountById(post.Account)
+
+	match := bson.M{ "title" : account.Title }
+	change := bson.M{"$push":bson.M{ "posts": post }}
+	err = collection2.Update(match,change)
 
 	if err != nil {
 		return err
@@ -75,6 +91,7 @@ func FindPostById(postId string) (*Post, error) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Print("findpostbyid commence")
 	collection, err := store.ConnectToPostsCollection(session, "posts")
 	if err != nil {
 		//panic(err)
@@ -102,7 +119,131 @@ func GetAllPosts(username string) ([]*Post, error){
 
 	posts := []*Post{}
 
-	err = collection.Find(bson.M{}).All(&posts)
+	err = collection.Find(bson.M{"username": username}).All(&posts)
+
+	return posts, err
+}
+
+
+
+func GetAccountUnapprovedPosts(accountId string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"account": accountId, "rated": false}).All(&posts)
+
+	return posts, err
+}
+
+
+func GetAccountApprovedPosts(accountId string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"account": accountId, "approved": true}).All(&posts)
+
+	return posts, err
+}
+
+func GetAccountDisapprovedPosts(accountId string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"account": accountId, "approved": false}).All(&posts)
+
+	return posts, err
+}
+
+
+
+func GetAllUnapprovedPosts(username string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"username": username, "rated": false}).All(&posts)
+
+	return posts, err
+}
+
+func GetAllApprovedPosts(username string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"username": username, "approved": true}).All(&posts)
+
+	return posts, err
+}
+
+func GetAllDisapprovedPosts(username string) ([]*Post, error){
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+	posts := []*Post{}
+
+	err = collection.Find(bson.M{"username": username, "approved": false}).All(&posts)
+
+	return posts, err
+}
+
+func GetAllAccountPosts(accountId string) ([]*Post, error){
+	fmt.Print("\n\nthis is the acct ID " + accountId)
+
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection := session.DB("test").C("posts")
+
+
+	posts := []*Post{}
+
+	//account, err := FindAccountById(accountId)
+
+	err = collection.Find(bson.M{"account": accountId}).All(&posts)
+
+	//fmt.Print(account.Posts)
 
 	return posts, err
 }
@@ -115,6 +256,8 @@ func DeletePost(id string) error {
 	fmt.Println(id)
 
 	err = collection.Remove(bson.M{"id": bson.ObjectIdHex(id)})
+
+
 	if err != nil {
 		fmt.Println("fack")
 		fmt.Println(err)

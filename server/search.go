@@ -2,38 +2,37 @@ package server
 
 
 import (
-	//"fmt"
-	//"time"
-	//"labix.org/v2/mgo/bson"
 	"github.com/butterfli-go/models"
 	"github.com/labstack/echo"
 	"github.com/ChimeraCoder/anaconda"
 
-	//"net/url"
-	//"net/url"
 	"net/http"
-	//"fmt"
 	"fmt"
+	"log"
 	"net/url"
+	"encoding/base64"
+	"strconv"
+	"io/ioutil"
 )
 
 func SearchController(c echo.Context) error {
 	socialNetwork := c.Param("socialNetwork")
 	searchTerm := c.Param("searchTerm")
+	accountId := c.Param("accountId")
 	username := c.Param("username")
 
-	searchTermStruct := models.FindSearchTerm(searchTerm)
+	//searchTermStruct := models.FindSearchTerm(searchTerm)
 	fmt.Print("booooom \n")
-	fmt.Print(searchTermStruct.Text)
+	//fmt.Print(searchTermStruct.Text)
 
-	results := Search(username, socialNetwork, searchTerm)
+	results := Search(username, accountId, socialNetwork, searchTerm)
 
 	for _, tweet := range results.Statuses {
 		if len(tweet.Entities.Media) > 0 {
 			fmt.Print("\n")
 			imgurl :=  tweet.Entities.Media[0].Media_url
 			fmt.Print(imgurl)
-			post := models.NewPost(username, searchTerm, imgurl)
+			post := models.NewPost(username, accountId, searchTerm, imgurl)
 			err := post.Save()
 			if err != nil {
 				fmt.Print(" - - > Failure on this one.. Probably a duplicate.")
@@ -43,31 +42,111 @@ func SearchController(c echo.Context) error {
 	return c.JSON(http.StatusOK, results)
 }
 
+func PostTweet(c echo.Context) error {
+	accountId := c.Param("accountId")
+	postId := c.Param("postId")
+	tweetText := c.Param("tweetText")
+	results := PostMediaToTwitter(accountId, postId, tweetText)
 
-func Search(username string, socialNetwork string, searchTerm string) anaconda.SearchResponse {
+	return c.JSON(http.StatusOK, results)
+}
+
+
+func Search(username string, accountId string, socialNetwork string, searchTerm string) anaconda.SearchResponse {
 	switch socialNetwork {
 	case "twitter":
-		return SearchTwitter(username, searchTerm)
+		return SearchTwitter(username, accountId, searchTerm)
 	default:
 		panic("unrecognized escape character")
 	}
 }
 
-func SearchTwitter(username string, searchTerm string) anaconda.SearchResponse {
+func SearchTwitter(username string, accountId string, searchTerm string) anaconda.SearchResponse {
+	fmt.Print("being seracdhTwitter")
 	v := url.Values{}
 	v.Set("count", "30")
 
 	updatedSearch := searchTerm + " filter:twimg"
-	anaconda.SetConsumerKey("32lvF7IqHpkZwJDDey4f160fT")
-	anaconda.SetConsumerSecret("nXcawfuDxew7gAdYyi2J3CDQQWEIWIsCPHSNO8kOlqEuSDMDGN")
-	api := anaconda.NewTwitterApi("28226407-zLDSNIDqXDEtK9YnDqBH1agA45BXjFkOkA03aZYsf", "SHz6fDl31gLYGXYQdiSbxrDiZFZTH6ewIJN4Kp2DDcjiI")
+	fmt.Print(updatedSearch)
+	accountCreds, err := models.FindAccountCredsByAccountId(accountId)
+	fmt.Print("pastfindingacct")
+	anaconda.SetConsumerKey(accountCreds.ConsumerKey)
+	anaconda.SetConsumerSecret(accountCreds.ConsumerSecret)
+	api := anaconda.NewTwitterApi(accountCreds.AccessToken, accountCreds.AccessTokenSecret)
 	//api.EnableThrottling(10*time.Second, 5)
 	search_result, err := api.GetSearch(updatedSearch, v)
-	fmt.Print("SearchTwitter success")
-	fmt.Print("\n")
 
 	if err != nil {
 		panic(err)
 	}
 	return search_result
+}
+
+func PostToTwitter(accountId string, text string) anaconda.Tweet {
+	v := url.Values{}
+	v.Set("count", "30")
+
+	accountCreds, err := models.FindAccountCredsByAccountId(accountId)
+
+	anaconda.SetConsumerKey(accountCreds.ConsumerKey)
+	anaconda.SetConsumerSecret(accountCreds.ConsumerSecret)
+	api := anaconda.NewTwitterApi(accountCreds.AccessToken, accountCreds.AccessTokenSecret)
+	tweet, err := api.PostTweet(text, v)
+
+	if err != nil {
+		panic(err)
+	}
+	return tweet
+}
+
+func PostMediaToTwitter(accountId string, postId string, text string) anaconda.Tweet {
+
+	post, err := models.FindPostById(postId)
+	//data :=
+	res, err := http.Get(post.Imgurl)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	//defer data.Body.Close()
+
+	if err != nil {
+		log.Fatalf("http.Get -> %v", err)
+	}
+
+	// We read all the bytes of the image
+	// Types: data []byte
+	data, err := ioutil.ReadAll(res.Body)
+
+
+	if err != nil {
+		log.Fatalf("ioutil.ReadAll -> %v", err)
+	}
+
+	accountCreds, err := models.FindAccountCredsByAccountId(accountId)
+
+	anaconda.SetConsumerKey(accountCreds.ConsumerKey)
+	anaconda.SetConsumerSecret(accountCreds.ConsumerSecret)
+	api := anaconda.NewTwitterApi(accountCreds.AccessToken, accountCreds.AccessTokenSecret)
+
+	mediaResponse, err := api.UploadMedia(base64.StdEncoding.EncodeToString(data))
+	if err != nil {
+		fmt.Println(err)
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	v := url.Values{}
+	v.Set("media_ids", strconv.FormatInt(mediaResponse.MediaID, 10))
+
+	res.Body.Close()
+
+	result, err := api.PostTweet(text, v)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(result)
+	}
+	return result
 }

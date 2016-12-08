@@ -53,6 +53,42 @@ func ConnectToPostsCollection(session *mgo.Session, collection_str string) (*mgo
 	return collection, err
 }
 
+func ConnectToAccountsCollection(session *mgo.Session, collection_str string) (*mgo.Collection, error) {
+	collection := session.DB("test").C(collection_str)
+	index := mgo.Index{
+		Key: []string{"title", "username"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := collection.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	return collection, err
+}
+
+func ConnectToAccountCredCollection(session *mgo.Session, collection_str string) (*mgo.Collection, error) {
+	collection := session.DB("test").C(collection_str)
+	index := mgo.Index{
+		Key: []string{"account", "username"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := collection.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	return collection, err
+}
+
 func ConnectToSearchTermCollection(session *mgo.Session, collection_str string) (*mgo.Collection, error) {
 	collection := session.DB("test").C(collection_str)
 	index := mgo.Index{
@@ -70,3 +106,4 @@ func ConnectToSearchTermCollection(session *mgo.Session, collection_str string) 
 
 	return collection, err
 }
+
