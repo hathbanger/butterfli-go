@@ -6,6 +6,9 @@ import (
 
 	"labix.org/v2/mgo/bson"
 	"github.com/butterfli-go/store"
+	//"github.com/go-blog/models"
+	//"github.com/labstack/gommon/log"
+
 )
 
 type User struct {
@@ -14,6 +17,21 @@ type User struct {
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
 	Password	string           `json:"password",bson:"password,omitempty"`
+	PostIds		[]string 	`json:"post_ids",bson:"post_ids,omitempty"`
+	posts 		[]*Post 	`json:"posts",bson:"posts,omitempty"`
+}
+
+func (u *User) GetAllPosts() error {
+	for _, post_id := range(u.PostIds) {
+		post, err := FindPostById(post_id)
+		if err != nil {
+			return err
+		}
+
+		u.posts = append(u.posts, post)
+	}
+
+	return nil
 }
 
 func NewUser(username string, password string) *User {
@@ -21,6 +39,7 @@ func NewUser(username string, password string) *User {
 	u.Id = bson.NewObjectId()
 	u.Username = username
 	u.Password = password
+	u.PostIds = []string{}
 
 	return u
 }
@@ -32,7 +51,7 @@ func (u *User) Save() error {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "users")
+	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +60,8 @@ func (u *User) Save() error {
 		Id: u.Id,
 		Timestamp: u.Timestamp,
 		Username: u.Username,
-		Password: u.Password})
+		Password: u.Password,
+		PostIds: u.PostIds})
 	if err != nil {
 		return err
 	}
@@ -56,7 +76,7 @@ func FindUser(username string) (User, error) {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "users")
+	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
 	if err != nil {
 		panic(err)
 	}
@@ -70,6 +90,27 @@ func FindUser(username string) (User, error) {
 	return user, err
 }
 
+func (u *User) FindAccountByTitle(title string) (*Account, error) {
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	collection, err := store.ConnectToAccountsCollection(session, "accounts")
+	if err != nil {
+		//panic(err)
+		return &Account{}, err
+	}
+
+	account := Account{}
+	err = collection.Find(bson.M{"username": u.Username, "title": title}).One(&account)
+	if err != nil {
+		panic(err)
+	}
+
+	return &account, err
+}
+
 
 func GetAllUsers() ([]*User, error){
 
@@ -79,7 +120,7 @@ func GetAllUsers() ([]*User, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "users")
+	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
 	if err != nil {
 		panic(err)
 	}

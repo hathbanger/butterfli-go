@@ -13,7 +13,8 @@ type Account struct {
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Title		string           	`json:"title",bson:"title,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
-	//Posts []*Post 			`json:"posts",bson:"posts,omitempty"`
+	//PostIds 	[]*bson.ObjectId	`json:"posts",bson:"posts,omitempty"`
+	//AccountCreds    []*AccountCreds		`json:"accountCreds",bson:"accountCreds,omitempty"`
 }
 
 func NewAccount(username string, title string) *Account {
@@ -22,7 +23,7 @@ func NewAccount(username string, title string) *Account {
 	a.Timestamp = time.Now()
 	a.Username = username
 	a.Title = title
-	//a.Posts = []*Post{}
+	//a.AccountCreds = []*AccountCreds{}
 
 	return a
 }
@@ -35,7 +36,7 @@ func (a *Account) Save() error {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToAccountsCollection(session, "accounts")
+	collection, err := store.ConnectToCollection(session, "accounts", []string{"title", "username"})
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +46,7 @@ func (a *Account) Save() error {
 		Timestamp: a.Timestamp,
 		Title: a.Title,
 		Username: a.Username,
-		//Posts: a.Posts
+		//AccountCreds: a.AccountCreds,
 	})
 
 	if err != nil {
@@ -81,7 +82,7 @@ func FindAccountById(account_id string) (*Account, error) {
 	if err != nil {
 		panic(err)
 	}
-	collection, err := store.ConnectToAccountsCollection(session, "accounts")
+	collection, err := store.ConnectToCollection(session, "accounts", []string{"username", "title"})
 	if err != nil {
 		//panic(err)
 		return &Account{}, err

@@ -48,12 +48,12 @@ func (a *AccountCreds) Save() error {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToAccountCredCollection(session, "accountCreds")
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"imgurl"})
 	if err != nil {
 		panic(err)
 	}
 
-	err = collection.Insert(&AccountCreds{
+	accountCreds := &AccountCreds{
 		Id: a.Id,
 		Timestamp: a.Timestamp,
 		Username: a.Username,
@@ -61,12 +61,11 @@ func (a *AccountCreds) Save() error {
 		ConsumerKey: a.ConsumerKey,
 		ConsumerSecret: a.ConsumerSecret,
 		AccessToken: a.AccessToken,
-		AccessTokenSecret: a.AccessTokenSecret})
+		AccessTokenSecret: a.AccessTokenSecret}
 
+	err = collection.Insert(accountCreds)
 
-	if err != nil {
-		return err
-	}
+	//fmt.Print(post)
 
 	return nil
 }
@@ -78,7 +77,7 @@ func FindAccountCredsById(accountCredsId string) (*AccountCreds, error) {
 	if err != nil {
 		panic(err)
 	}
-	collection, err := store.ConnectToPostsCollection(session, "accountCreds")
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"imgurl"})
 	if err != nil {
 		//panic(err)
 		return &AccountCreds{}, err
@@ -96,15 +95,18 @@ func FindAccountCredsById(accountCredsId string) (*AccountCreds, error) {
 
 
 func FindAccountCredsByAccountId(accountId string) (*AccountCreds, error) {
-	fmt.Print("begin FACBAI")
+	fmt.Print("\n starting FindAccountCredsByAccountId \n")
 	session, err := store.ConnectToDb()
+	fmt.Print("\n k session is good\n")
 	defer session.Close()
 	if err != nil {
+		fmt.Print("\n issues connecting to DB :(\n")
 		panic(err)
 	}
-	collection, err := store.ConnectToAccountCredCollection(session, "accountCreds")
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"username"})
 	if err != nil {
 		//panic(err)
+		fmt.Print("\n we couldn't find the Account Creds :(\n")
 		return &AccountCreds{}, err
 	}
 
@@ -112,6 +114,7 @@ func FindAccountCredsByAccountId(accountId string) (*AccountCreds, error) {
 	err = collection.Find(bson.M{"account": accountId}).One(&accountCreds)
 	if err != nil {
 		panic(err)
+		fmt.Print("\n issues finding the accountId :(\n")
 		//return &post, err
 	}
 

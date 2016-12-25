@@ -48,7 +48,7 @@ func CreateAccountCreds(c echo.Context) error {
 	accessToken := c.FormValue("accessToken")
 	accessTokenSecret := c.FormValue("accessTokenSecret")
 
-	fmt.Print("creating an account for you")
+	fmt.Print("creating account creds for you")
 
 	account := models.NewAccountCreds(username, accountId, consumerKey, consumerSecret, accessToken, accessTokenSecret)
 
@@ -67,14 +67,12 @@ func GetAccountCreds(c echo.Context) error {
 	accountId := c.Param("accountId")
 
 	fmt.Print("getting the account creds for you")
-
 	account, err := models.FindAccountCredsByAccountId(accountId)
 
 	if err != nil {
-		fmt.Print("account creation failure!")
 		return c.JSON(http.StatusForbidden, "We're sorry! we couldn't find it....")
 	}
-	fmt.Print("account creation success!")
+	fmt.Print("found account creds!")
 
 	return c.JSON(http.StatusOK, account)
 }

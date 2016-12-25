@@ -13,9 +13,13 @@ import (
 	"encoding/base64"
 	"strconv"
 	"io/ioutil"
+	//"gopkg.in/mgo.v2/bson"
+	//"labix.org/v2/mgo/bson"
+	//"gopkg.in/mgo.v2/bson"
 )
 
 func SearchController(c echo.Context) error {
+
 	socialNetwork := c.Param("socialNetwork")
 	searchTerm := c.Param("searchTerm")
 	accountId := c.Param("accountId")
@@ -39,11 +43,12 @@ func SearchController(c echo.Context) error {
 			}
 		}
 	}
+
 	return c.JSON(http.StatusOK, results)
 }
 
 func PostTweet(c echo.Context) error {
-	accountId := c.Param("accountId")
+	accountId := c.Param("account_id")
 	postId := c.Param("postId")
 	tweetText := c.Param("tweetText")
 	results := PostMediaToTwitter(accountId, postId, tweetText)
@@ -122,6 +127,9 @@ func PostMediaToTwitter(accountId string, postId string, text string) anaconda.T
 	if err != nil {
 		log.Fatalf("ioutil.ReadAll -> %v", err)
 	}
+
+	fmt.Print("here we go w the account Creds: \n")
+	fmt.Print(accountId)
 
 	accountCreds, err := models.FindAccountCredsByAccountId(accountId)
 

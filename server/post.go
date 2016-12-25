@@ -5,12 +5,15 @@ import (
 	"net/http"
 	"github.com/butterfli-go/models"
 	"fmt"
+	//"gopkg.in/mgo.v2/bson"
+	"labix.org/v2/mgo/bson"
 )
 
 
 
-func GetAllPosts(c echo.Context) error {
+func FindPostsByUsername(c echo.Context) error {
 	username := c.Param("username")
+	fmt.Print("\n"+username+" : username \n")
 	posts, err := models.GetAllPosts(username)
 	if err != nil {
 		panic(err)
@@ -106,8 +109,15 @@ func FindAllDisapprovedPosts(c echo.Context) error {
 
 
 func FindPost(c echo.Context) error {
-	postId := c.Param("postId")
-	post, err := models.FindPostById(postId)
+	post_id := c.Param("postId")
+	//object_id := bson.ObjectIdHex(post_id)
+	if bson.IsObjectIdHex(post_id) {
+		fmt.Print("this is an object id!")
+	}
+	//fmt.Print("\n new object_id object \n")
+	//fmt.Print(object_id)
+	fmt.Print("\n")
+	post, err := models.FindPostById(post_id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, "not found!")
 	}
@@ -118,7 +128,8 @@ func FindPost(c echo.Context) error {
 func ApprovePost(c echo.Context) error {
 	postId := c.Param("postId")
 	fmt.Print(postId)
-	fmt.Print("\n that was postid")
+	//fmt.Print("\n that was postid")
+	//object_id := bson.ObjectIdHex(postId)
 	err := models.ApprovePostById(postId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, "not approved")
@@ -128,6 +139,7 @@ func ApprovePost(c echo.Context) error {
 
 func DisapprovePost(c echo.Context) error {
 	postId := c.Param("postId")
+	//object_id := bson.ObjectIdHex(postId)
 	err := models.DisapprovePostById(postId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, "failure")

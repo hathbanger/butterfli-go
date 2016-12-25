@@ -30,37 +30,40 @@ func Run() {
 	// ROUTES
 	e.GET("/", accessible)
 	r.GET("", restricted)
-
-	e.GET("/:username/accounts/:accountId/search/:socialNetwork/:searchTerm", SearchController)
-	e.GET("/:username/posts", GetAllPosts)
-
-	e.GET("/:username/accounts/:account_id/posts", FindAllAccountPosts)
-	e.GET("/:username/accounts/:account_id/posts/unapproved", FindAccountUnapprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/Approved", FindAccountApprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/Disapproved", FindAccountDisapprovedPosts)
-
-	e.GET("/:username/posts/unapproved", FindAllUnapprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/approved", FindAllApprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/disapproved", FindAllDisapprovedPosts)
-
-	e.GET("/:username/find/:postId", FindPost)
-
-	e.GET("/user/:username", GetUser)
+	// User Routes
+	e.GET("/:username", GetUser)
 	e.POST("/user", CreateUser)
 	e.GET("/users", GetAllUsers)
+	e.POST("/login", Login)
+
+	e.GET("/:username/posts", FindPostsByUsername)
+	e.GET("/:username/posts/:postId", FindPost)
+	e.GET("/:username/posts/unapproved", FindAllUnapprovedPosts)
+	e.GET("/:username/posts/approved", FindAllApprovedPosts)
+	e.GET("/:username/posts/disapproved", FindAllDisapprovedPosts)
 
 	e.GET("/:username/accounts", GetAllAccountsByUsername)
 	e.GET("/:username/accounts/:account_id", GetAccountById)
-	e.POST("/:username/accounts/:accountId/twitter/creds", CreateAccountCreds)
-	e.GET("/:username/accounts/:accountId/account-creds", GetAccountCreds)
 	e.GET("/:username/accounts/find/:title", GetAccountByTitle)
-	e.POST("/:username/accounts/create/:title", CreateAccount)
+	e.GET("/:username/accounts/:accountId/account-creds", GetAccountCreds)
 
-	e.POST("/post/upload/twitter/:postId/:tweetText", PostTweet)
+	e.GET("/:username/accounts/:account_id/posts", FindAllAccountPosts)
+	e.GET("/:username/accounts/:account_id/posts/unapproved", FindAccountUnapprovedPosts)
+	e.GET("/:username/accounts/:account_id/posts/approved", FindAccountApprovedPosts)
+	e.GET("/:username/accounts/:account_id/posts/disapproved", FindAccountDisapprovedPosts)
 	e.POST("/post/approve/:postId", ApprovePost)
 	e.POST("/post/disapprove/:postId", DisapprovePost)
+
+
+	e.POST("/:username/accounts/:accountId/twitter/creds", CreateAccountCreds)
+	e.POST("/:username/accounts/:account_id/post/:postId/upload/twitter/:tweetText", PostTweet)
+	e.GET("/:username/accounts/:accountId/search/:socialNetwork/:searchTerm", SearchController)
 	e.POST("/:username/accounts/:account_id/post/delete/:postId", RemovePost)
-	e.POST("/login", Login)
+
+
+	// NOT TESTED
+	e.POST("/:username/accounts/create/:title", CreateAccount)
+
 
 	fmt.Println("Server now running on port: 1323")
 	e.Run(standard.New(":1323"))

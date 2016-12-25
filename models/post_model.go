@@ -3,8 +3,8 @@ package models
 import (
 	//"encoding/json"
 
-	//"labix.org/v2/mgo"
-	"gopkg.in/mgo.v2/bson"
+	"labix.org/v2/mgo/bson"
+	//"gopkg.in/mgo.v2/bson"
 	//"log"
 	//"sync"
 	"fmt"
@@ -47,11 +47,10 @@ func (p *Post) Save() error {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToPostsCollection(session, "posts")
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 	if err != nil {
 		panic(err)
 	}
-
 	post := &Post{
 		Id: p.Id,
 		Timestamp: p.Timestamp,
@@ -62,20 +61,9 @@ func (p *Post) Save() error {
 		Approved: p.Approved,
 		Rated: p.Rated}
 
+
 	err = collection.Insert(post)
 
-	fmt.Print(post)
-
-	collection2, err := store.ConnectToAccountsCollection(session, "accounts")
-	if err != nil {
-		panic(err)
-	}
-
-	account, err := FindAccountById(post.Account)
-
-	match := bson.M{ "title" : account.Title }
-	change := bson.M{"$push":bson.M{ "posts": post }}
-	err = collection2.Update(match,change)
 
 	if err != nil {
 		return err
@@ -85,24 +73,30 @@ func (p *Post) Save() error {
 }
 
 
-func FindPostById(postId string) (*Post, error) {
+func FindPostById(post_id string) (*Post, error) {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print("findpostbyid commence")
-	collection, err := store.ConnectToPostsCollection(session, "posts")
+	fmt.Print("\nfind post by id commence: ")
+	fmt.Print(post_id)
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	//collection, err := store.ConnectToPostsCollection(session, "posts")
 	if err != nil {
 		//panic(err)
+		fmt.Print("\nfind post byid error\n")
 		return &Post{}, err
 	}
 
 	post := Post{}
-	err = collection.Find(bson.M{"id": bson.ObjectIdHex(postId)}).One(&post)
+	err = collection.Find(bson.M{"id": bson.ObjectIdHex(post_id)}).One(&post)
 	if err != nil {
-		panic(err)
-		//return &post, err
+
+		fmt.Print("\n not found!\n\n\n")
+		//panic(err)
+
+		return &post, err
 	}
 
 	return &post, err
@@ -115,7 +109,7 @@ func GetAllPosts(username string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection := session.DB("test").C("posts")
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -133,7 +127,7 @@ func GetAccountUnapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection := session.DB("test").C("posts")
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -150,7 +144,7 @@ func GetAccountApprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection := session.DB("test").C("posts")
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -166,7 +160,7 @@ func GetAccountDisapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection := session.DB("test").C("posts")
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -283,6 +277,7 @@ func ApprovePostById(postId string) error {
 	change := bson.M{"$set": bson.M{ "approved": true, "rated": true }}
 	err = collection.Update(colQuerier, change)
 	if err != nil {
+		fmt.Print(" issues ")
 		panic(err)
 	}
 	return nil
