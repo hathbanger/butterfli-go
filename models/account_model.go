@@ -6,6 +6,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/butterfli-go/store"
 	"fmt"
+	//"github.com/labstack/echo"
+	//"net/http"
 )
 
 type Account struct {
@@ -52,6 +54,26 @@ func (a *Account) Save() error {
 	}
 	return nil
 }
+
+
+func DeleteAccount(accountId string) error {
+	session, err := store.ConnectToDb()
+
+	collection := session.DB("test").C("accounts")
+	fmt.Println("id:")
+	fmt.Println(accountId)
+
+	err = collection.Remove(bson.M{"id": bson.ObjectIdHex(accountId)})
+
+
+	if err != nil {
+		fmt.Println("fack")
+		fmt.Println(err)
+	}
+	return nil
+}
+
+
 
 func FindAccount(username string, title string) (*Account, error) {
 	session, err := store.ConnectToDb()

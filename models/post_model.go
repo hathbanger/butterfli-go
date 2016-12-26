@@ -68,6 +68,7 @@ func (p *Post) Save() error {
 }
 
 
+
 func FindPostById(post_id string) (*Post, error) {
 	session, err := store.ConnectToDb()
 	defer session.Close()

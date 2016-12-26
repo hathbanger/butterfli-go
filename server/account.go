@@ -38,6 +38,15 @@ func CreateAccount(c echo.Context) error {
 }
 
 
+func RemoveAccount(c echo.Context) error {
+	accountId := c.Param("account_id")
+	err := models.DeleteAccount(accountId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, "not able to remove the account..")
+	}
+
+	return c.JSON(http.StatusOK, "worked!!")
+}
 
 
 func CreateAccountCreds(c echo.Context) error {

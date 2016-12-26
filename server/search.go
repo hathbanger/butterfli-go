@@ -152,6 +152,8 @@ func PostMediaToTwitter(accountId string, postId string, text string) anaconda.T
 
 	res.Body.Close()
 
+	text = ""
+
 	result, err := api.PostTweet(text, v)
 	if err != nil {
 		fmt.Println(err)
