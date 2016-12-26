@@ -19,7 +19,7 @@ type AccountCreds struct {
 	Id 		bson.ObjectId          `json:"id",bson:"_id,omitempty"`
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
-	Account	string           `json:"account",bson:"account,omitempty"`
+	Account		string           `json:"account",bson:"account,omitempty"`
 	ConsumerKey		string           `json:"consumerKey",bson:"consumerKey,omitempty"`
 	ConsumerSecret		string           `json:"consumerSecret",bson:"consumerSecret,omitempty"`
 	AccessToken		string           `json:"accessToken",bson:"accessToken,omitempty"`
@@ -48,7 +48,7 @@ func (a *AccountCreds) Save() error {
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"account", "username"})
 	if err != nil {
 		panic(err)
 	}
@@ -64,8 +64,6 @@ func (a *AccountCreds) Save() error {
 		AccessTokenSecret: a.AccessTokenSecret}
 
 	err = collection.Insert(accountCreds)
-
-	//fmt.Print(post)
 
 	return nil
 }
@@ -97,13 +95,15 @@ func FindAccountCredsById(accountCredsId string) (*AccountCreds, error) {
 func FindAccountCredsByAccountId(accountId string) (*AccountCreds, error) {
 	fmt.Print("\n starting FindAccountCredsByAccountId \n")
 	session, err := store.ConnectToDb()
-	fmt.Print("\n k session is good\n")
+	fmt.Print("\n k session is good: ")
 	defer session.Close()
+	fmt.Print(accountId)
 	if err != nil {
 		fmt.Print("\n issues connecting to DB :(\n")
 		panic(err)
 	}
-	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"username"})
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"account", "username"})
+
 	if err != nil {
 		//panic(err)
 		fmt.Print("\n we couldn't find the Account Creds :(\n")
@@ -111,12 +111,16 @@ func FindAccountCredsByAccountId(accountId string) (*AccountCreds, error) {
 	}
 
 	accountCreds := AccountCreds{}
+	fmt.Print("accountId: ")
+	fmt.Print(accountId)
+	fmt.Print("\n")
 	err = collection.Find(bson.M{"account": accountId}).One(&accountCreds)
 	if err != nil {
-		panic(err)
 		fmt.Print("\n issues finding the accountId :(\n")
-		//return &post, err
+		return &accountCreds, err
 	}
 
+	fmt.Print("found! \n")
+	fmt.Print(accountCreds)
 	return &accountCreds, err
 }

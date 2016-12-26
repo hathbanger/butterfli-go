@@ -27,13 +27,14 @@ func SearchController(c echo.Context) error {
 
 	//searchTermStruct := models.FindSearchTerm(searchTerm)
 	fmt.Print("booooom \n")
+	fmt.Print("starting the search \n")
 	//fmt.Print(searchTermStruct.Text)
 
 	results := Search(username, accountId, socialNetwork, searchTerm)
 
 	for _, tweet := range results.Statuses {
 		if len(tweet.Entities.Media) > 0 {
-			fmt.Print("\n")
+			fmt.Print("\nbeginning resuls status/n")
 			imgurl :=  tweet.Entities.Media[0].Media_url
 			fmt.Print(imgurl)
 			post := models.NewPost(username, accountId, searchTerm, imgurl)
@@ -67,14 +68,15 @@ func Search(username string, accountId string, socialNetwork string, searchTerm 
 }
 
 func SearchTwitter(username string, accountId string, searchTerm string) anaconda.SearchResponse {
-	fmt.Print("being seracdhTwitter")
+	fmt.Print("being search Twitter\n")
 	v := url.Values{}
 	v.Set("count", "30")
 
 	updatedSearch := searchTerm + " filter:twimg"
 	fmt.Print(updatedSearch)
 	accountCreds, err := models.FindAccountCredsByAccountId(accountId)
-	fmt.Print("pastfindingacct")
+	fmt.Print("past finding acct\n")
+	fmt.Print(accountCreds.ConsumerKey)
 	anaconda.SetConsumerKey(accountCreds.ConsumerKey)
 	anaconda.SetConsumerSecret(accountCreds.ConsumerSecret)
 	api := anaconda.NewTwitterApi(accountCreds.AccessToken, accountCreds.AccessTokenSecret)

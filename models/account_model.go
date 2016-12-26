@@ -13,8 +13,8 @@ type Account struct {
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Title		string           	`json:"title",bson:"title,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
-	//PostIds 	[]*bson.ObjectId	`json:"posts",bson:"posts,omitempty"`
-	//AccountCreds    []*AccountCreds		`json:"accountCreds",bson:"accountCreds,omitempty"`
+	Posts 		[]*Post		 `json:"posts",bson:"posts,omitempty"`
+	AccountCreds    []AccountCreds		`json:"accountCreds",bson:"accountCreds,omitempty"`
 }
 
 func NewAccount(username string, title string) *Account {
@@ -23,7 +23,6 @@ func NewAccount(username string, title string) *Account {
 	a.Timestamp = time.Now()
 	a.Username = username
 	a.Title = title
-	//a.AccountCreds = []*AccountCreds{}
 
 	return a
 }
@@ -46,7 +45,6 @@ func (a *Account) Save() error {
 		Timestamp: a.Timestamp,
 		Title: a.Title,
 		Username: a.Username,
-		//AccountCreds: a.AccountCreds,
 	})
 
 	if err != nil {

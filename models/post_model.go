@@ -1,12 +1,7 @@
 package models
 
 import (
-	//"encoding/json"
-
 	"labix.org/v2/mgo/bson"
-	//"gopkg.in/mgo.v2/bson"
-	//"log"
-	//"sync"
 	"fmt"
 	"time"
 	"github.com/butterfli-go/store"
@@ -81,7 +76,7 @@ func FindPostById(post_id string) (*Post, error) {
 	}
 	fmt.Print("\nfind post by id commence: ")
 	fmt.Print(post_id)
-	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 	//collection, err := store.ConnectToPostsCollection(session, "posts")
 	if err != nil {
 		//panic(err)
@@ -109,7 +104,7 @@ func GetAllPosts(username string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 
 	posts := []*Post{}
 
@@ -127,7 +122,7 @@ func GetAccountUnapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 
 	posts := []*Post{}
 
@@ -144,7 +139,7 @@ func GetAccountApprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 
 	posts := []*Post{}
 
@@ -160,7 +155,7 @@ func GetAccountDisapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
 
 	posts := []*Post{}
 
