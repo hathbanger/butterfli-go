@@ -13,14 +13,14 @@ type Post struct {
 	Id 		bson.ObjectId          `json:"id",bson:"_id,omitempty"`
 	Timestamp 	time.Time	       `json:"time",bson:"time,omitempty"`
 	Username	string           `json:"username",bson:"username,omitempty"`
-	Account	string           `json:"account",bson:"account,omitempty"`
+	Account		string           `json:"account",bson:"account,omitempty"`
 	Imgurl		string           `json:"imgurl",bson:"imgurl,omitempty"`
-	SearchTerm	string           `json:"searchterm",bson:"searchterm,omitempty"`
+	SearchTerm	SearchTerm           `json:"searchterm",bson:"searchterm,omitempty"`
 	Approved	bool           `json:"approved",bson:"approved,omitempty"`
-	Rated	bool           `json:"rated",bson:"rated,omitempty"`
+	Rated		bool           `json:"rated",bson:"rated,omitempty"`
 }
 
-func NewPost(username string, account string, searchTerm string, imgUrl string) *Post {
+func NewPost(username string, account string, searchTerm SearchTerm, imgUrl string) *Post {
 	p := new(Post)
 	p.Id = bson.NewObjectId()
 	p.Timestamp = time.Now()
@@ -51,9 +51,9 @@ func (p *Post) Save() error {
 		Timestamp: p.Timestamp,
 		Username: p.Username,
 		Account: p.Account,
-		SearchTerm: p.SearchTerm,
 		Imgurl: p.Imgurl,
 		Approved: p.Approved,
+		SearchTerm: p.SearchTerm,
 		Rated: p.Rated}
 
 
@@ -66,7 +66,6 @@ func (p *Post) Save() error {
 
 	return nil
 }
-
 
 
 func FindPostById(post_id string) (*Post, error) {
@@ -123,7 +122,7 @@ func GetAccountUnapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -140,7 +139,7 @@ func GetAccountApprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -156,7 +155,7 @@ func GetAccountDisapprovedPosts(accountId string) ([]*Post, error){
 		panic(err)
 	}
 
-	collection, err := store.ConnectToCollection(session, "posts", []string{"account", "imgurl"})
+	collection, err := store.ConnectToCollection(session, "posts", []string{"imgurl"})
 
 	posts := []*Post{}
 
@@ -231,7 +230,7 @@ func GetAllAccountPosts(accountId string) ([]*Post, error){
 
 	//account, err := FindAccountById(accountId)
 
-	err = collection.Find(bson.M{"account": accountId}).All(&posts)
+	err = collection.Find(bson.M{"$where": "this.rated == false || this.approved == true"}).All(&posts)
 
 	//fmt.Print(account.Posts)
 

@@ -44,6 +44,7 @@ func Run() {
 
 	e.GET("/:username/accounts", GetAllAccountsByUsername)
 	e.GET("/:username/accounts/:account_id", GetAccountById)
+	e.GET("/:username/accounts/:account_id/search-terms", GetAllSearchTerms)
 	e.GET("/:username/accounts/find/:title", GetAccountByTitle)
 	e.GET("/:username/accounts/:accountId/account-creds", GetAccountCreds)
 	e.POST("/:username/accounts/:account_id/delete", RemoveAccount)

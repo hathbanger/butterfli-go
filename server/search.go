@@ -13,48 +13,23 @@ import (
 	"encoding/base64"
 	"strconv"
 	"io/ioutil"
-	//"gopkg.in/mgo.v2/bson"
-	//"labix.org/v2/mgo/bson"
-	//"gopkg.in/mgo.v2/bson"
+	//"time"
+	//"github.com/smartystreets/goconvey/web/server/api"
 )
 
 func SearchController(c echo.Context) error {
 
 	socialNetwork := c.Param("socialNetwork")
-	searchTerm := c.Param("searchTerm")
+	searchTermString := c.Param("searchTerm")
 	accountId := c.Param("accountId")
 	username := c.Param("username")
 
-	//searchTermStruct := models.FindSearchTerm(searchTerm)
-	fmt.Print("booooom \n")
-	fmt.Print("starting the search \n")
-	//fmt.Print(searchTermStruct.Text)
+	searchTerm := models.NewSearchTerm(accountId, searchTermString)
 
-	results := Search(username, accountId, socialNetwork, searchTerm)
-
-	for _, tweet := range results.Statuses {
-		if len(tweet.Entities.Media) > 0 {
-			fmt.Print("\nbeginning resuls status/n")
-			imgurl :=  tweet.Entities.Media[0].Media_url
-			fmt.Print(imgurl)
-			post := models.NewPost(username, accountId, searchTerm, imgurl)
-			err := post.Save()
-			if err != nil {
-				fmt.Print(" - - > Failure on this one.. Probably a duplicate.")
-			}
-		}
-	}
-
-	return c.JSON(http.StatusOK, results)
-}
-
-func PostTweet(c echo.Context) error {
-	accountId := c.Param("account_id")
-	postId := c.Param("postId")
-	tweetText := c.Param("tweetText")
-	results := PostMediaToTwitter(accountId, postId, tweetText)
-
-	return c.JSON(http.StatusOK, results)
+	results := Search(username, accountId, socialNetwork, searchTerm.Text)
+	postedResults := CreatePostFromResults(username, accountId, searchTerm, socialNetwork, results)
+	searchTerm.Save()
+	return c.JSON(http.StatusOK, postedResults)
 }
 
 
@@ -80,13 +55,43 @@ func SearchTwitter(username string, accountId string, searchTerm string) anacond
 	anaconda.SetConsumerKey(accountCreds.ConsumerKey)
 	anaconda.SetConsumerSecret(accountCreds.ConsumerSecret)
 	api := anaconda.NewTwitterApi(accountCreds.AccessToken, accountCreds.AccessTokenSecret)
-	//api.EnableThrottling(10*time.Second, 5)
+
 	search_result, err := api.GetSearch(updatedSearch, v)
 
 	if err != nil {
 		panic(err)
 	}
 	return search_result
+}
+
+func CreatePostFromResults(username string, accountId string, searchTerm *models.SearchTerm, socialNetwork string, results anaconda.SearchResponse) anaconda.SearchResponse {
+	for _, tweet := range results.Statuses {
+		if len(tweet.Entities.Media) > 0 {
+			imgurl :=  tweet.Entities.Media[0].Media_url
+			post := models.NewPost(username, accountId, *searchTerm, imgurl)
+			err := post.Save()
+			if err != nil {
+				fmt.Print(" - - > Failure on this one.. Probably a duplicate.")
+			}
+		}
+	}
+	return results
+}
+
+func GetAllSearchTerms(c echo.Context) error {
+	accountId := c.Param("accountId")
+
+	searchTerm := models.FindAllSearchTerms(accountId)
+	return c.JSON(http.StatusOK, searchTerm)
+}
+
+func PostTweet(c echo.Context) error {
+	accountId := c.Param("account_id")
+	postId := c.Param("postId")
+	tweetText := c.Param("tweetText")
+	results := PostMediaToTwitter(accountId, postId, tweetText)
+
+	return c.JSON(http.StatusOK, results)
 }
 
 func PostToTwitter(accountId string, text string) anaconda.Tweet {
