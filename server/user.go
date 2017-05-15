@@ -12,25 +12,20 @@ import (
 func CreateUser(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
-	
 	user := models.NewUser(username, password)
 	err := user.Save()
 	if err != nil {
 		return c.JSON(http.StatusForbidden, "We're sorry! There's already a user with that username..")
 	}
-
 	return c.JSON(http.StatusOK, user)
 }
 
 func GetUser(c echo.Context) error {
 	username := c.Param("username")
-
 	user, err := models.FindUser(username)
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
-	if user.Id != "" /*&& user.Username != "" */ {
+	if user.Id != "" {
 		return c.JSON(http.StatusOK, user)
 	} else {
 		return c.JSON(http.StatusNotFound, "not found")
@@ -40,12 +35,8 @@ func GetUser(c echo.Context) error {
 func Login(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
-
 	user, err := models.FindUser(username)
-	if err != nil {
-		panic(err)
-	}
-
+	if err != nil {panic(err)}
 	if user.Password == password {
 		token := jwt.New(jwt.SigningMethodHS256)
 
@@ -68,9 +59,7 @@ func Login(c echo.Context) error {
 
 func GetAllUsers(c echo.Context) error {
 	users, err := models.GetAllUsers()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	return c.JSON(http.StatusOK, users)
 }

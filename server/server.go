@@ -25,42 +25,34 @@ func Run() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	// CHECKOUT!! e.Group()
-
 	// ROUTES
 	e.GET("/", accessible)
 	r.GET("", restricted)
-	// User Routes
 	e.GET("/:username", GetUser)
-	e.POST("/user", CreateUser)
 	e.GET("/users", GetAllUsers)
-	e.POST("/login", Login)
-
-	e.GET("/:username/posts", FindPostsByUsername)
-	e.GET("/:username/posts/:postId", FindPost)
-	e.GET("/:username/posts/unapproved", FindAllUnapprovedPosts)
-	e.GET("/:username/posts/approved", FindAllApprovedPosts)
-	e.GET("/:username/posts/disapproved", FindAllDisapprovedPosts)
-
 	e.GET("/:username/accounts", GetAllAccountsByUsername)
-	e.GET("/:username/accounts/:account_id", GetAccountById)
-	e.GET("/:username/accounts/:account_id/search-terms", GetAllSearchTerms)
-	e.GET("/:username/accounts/find/:title", GetAccountByTitle)
 	e.GET("/:username/accounts/:accountId/account-creds", GetAccountCreds)
-	e.POST("/:username/accounts/:account_id/delete", RemoveAccount)
-
 	e.GET("/:username/accounts/:account_id/posts", FindAllAccountPosts)
-	e.GET("/:username/accounts/:account_id/posts/unapproved", FindAccountUnapprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/approved", FindAccountApprovedPosts)
-	e.GET("/:username/accounts/:account_id/posts/disapproved", FindAccountDisapprovedPosts)
+	e.GET("/:username/accounts/:accountId/search/:socialNetwork/:searchTerm", SearchController)
+
+	e.POST("/:username/accounts/:accountId/search/:socialNetwork/:searchTerm", SearchAndFavorite)
+
+
+	e.POST("/login", Login)
+	e.POST("/user", CreateUser)
+	e.POST("/post/edit/:postId/title/:title", EditPost)
 	e.POST("/post/approve/:postId", ApprovePost)
 	e.POST("/post/disapprove/:postId", DisapprovePost)
-
-
-	e.POST("/:username/accounts/:accountId/twitter/creds", CreateAccountCreds)
-	e.POST("/:username/accounts/:account_id/post/:postId/upload/twitter/:tweetText", PostTweet)
-	e.GET("/:username/accounts/:accountId/search/:socialNetwork/:searchTerm", SearchController)
 	e.POST("/:username/accounts/:account_id/post/delete/:postId", RemovePost)
+	e.POST("/:username/accounts/:account_id/post/:postId/upload/twitter/:tweetText", PostTweet)
+	e.POST("/:username/accounts/:accountId/twitter/creds", CreateAccountCreds)
+
+	e.POST("/:username/botnet/favorite/:tweetId/accounts/:accountsArray", BotnetFavoriteTweet)
+	e.POST("/:username/botnet/follow-account/:accountId/accounts/:accountsArray", BotnetFollowAccountId)
+	e.POST("/:username/botnet/follow/:accountName/accounts/:accountsArray", BotnetFollowAccountName)
+
+	e.GET("/:username/accounts/:accountId/search-terms", GetAllSearchTerms)
+
 
 
 	// NOT TESTED

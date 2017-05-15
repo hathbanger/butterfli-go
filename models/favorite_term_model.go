@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type SearchTerm struct {
+type FavoriteTerm struct {
 	Id 		bson.ObjectId 		`json:"id",bson:"_id,omitempty"`
 	Timestamp 	time.Time	       	`json:"time",bson:"time,omitempty"`
 	Text		string           	`json:"text",bson:"text,omitempty"`
@@ -16,9 +16,9 @@ type SearchTerm struct {
 	SinceTweetId	int64 			`json:"sincetweetid",bson:"sincetweetid,omitempty"`
 }
 
-func NewSearchTerm(account string, text string) *SearchTerm {
+func NewFavoriteTerm(account string, text string) *FavoriteTerm {
 	var sinceTweetId int64
-	s := new(SearchTerm)
+	s := new(FavoriteTerm)
 	s.Id = bson.NewObjectId()
 	s.Text = text
 	s.Account = account
@@ -27,12 +27,12 @@ func NewSearchTerm(account string, text string) *SearchTerm {
 	return s
 }
 
-func (s *SearchTerm) Save() error {
+func (s *FavoriteTerm) Save() error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {panic(err)}
 
-	collection, err := store.ConnectToCollection(session, "searchTerms", []string{"account", "text"})
+	collection, err := store.ConnectToCollection(session, "favoriteTerms", []string{"account", "text"})
 	if err != nil {panic(err)}
 
 	searchTerm := &SearchTerm{
@@ -49,53 +49,53 @@ func (s *SearchTerm) Save() error {
 
 }
 
-func FindAllSearchTerms(accountId string) []*SearchTerm {
+func FindAllFavoriteTerms(accountId string) []*FavoriteTerm {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {panic(err)}
 
-	collection, err := store.ConnectToCollection(session, "searchTerms", []string{"account", "text"})
+	collection, err := store.ConnectToCollection(session, "favoriteTerms", []string{"account", "text"})
 	if err != nil {panic(err)}
 
-	searchTerms := []*SearchTerm{}
-	err = collection.Find(bson.M{"account": accountId}).All(&searchTerms)
+	favoriteTerms := []*FavoriteTerm{}
+	err = collection.Find(bson.M{"account": accountId}).All(&favoriteTerms)
 	if err != nil {panic(err)}
 
-	return searchTerms
+	return favoriteTerms
 }
 
-func FindSearchTerm(account string, text string) (*SearchTerm, error) {
+func FindFavoriteTerm(account string, text string) (*FavoriteTerm, error) {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {panic(err)}
 
-	collection, err := store.ConnectToCollection(session, "searchTerms", []string{"account", "text"})
+	collection, err := store.ConnectToCollection(session, "favoriteTerms", []string{"account", "text"})
 	if err != nil {panic(err)}
 
-	searchTerm := SearchTerm{}
-	err = collection.Find(bson.M{ "account": account, "text": text}).One(&searchTerm)
+	favoriteTerm := FavoriteTerm{}
+	err = collection.Find(bson.M{ "account": account, "text": text}).One(&favoriteTerm)
 
 	if err != nil {fmt.Print("\nerror! couldn't find the searchTerm\n")}
 
-	fmt.Print("\nsearch term: ")
-	fmt.Print(searchTerm)
+	fmt.Print("\nfavorite term: ")
+	fmt.Print(favoriteTerm)
 	//FindAllSearchTerms(account)
-	return &searchTerm, err
+	return &favoriteTerm, err
 }
 
 
-func UpdateSearchTerm(searchTerm *SearchTerm, sinceTweetId int64) error {
+func UpdateFavoriteTerm(favoriteTerm *FavoriteTerm, sinceTweetId int64) error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {panic(err)}
 
 
-	collection, err := store.ConnectToCollection(session, "searchTerms", []string{"account", "text"})
+	collection, err := store.ConnectToCollection(session, "favoriteTerms", []string{"account", "text"})
 	if err != nil {panic(err)}
 
 	fmt.Print(sinceTweetId)
 
-	colQuerier := bson.M{"id": searchTerm.Id}
+	colQuerier := bson.M{"id": favoriteTerm.Id}
 	change := bson.M{"$set": bson.M{"sincetweetid": sinceTweetId}}
 	err = collection.Update(colQuerier, change)
 	if err != nil {
@@ -105,15 +105,15 @@ func UpdateSearchTerm(searchTerm *SearchTerm, sinceTweetId int64) error {
 	return err
 }
 
-func AddPostCountToSearchTerm(searchTerm *SearchTerm, count int) error {
+func AddPostCountToFavoriteTerm(favoriteTerm *FavoriteTerm, count int) error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {panic(err)}
 
-	collection, err := store.ConnectToCollection(session, "searchTerms", []string{"account", "text"})
+	collection, err := store.ConnectToCollection(session, "favoriteTerms", []string{"account", "text"})
 	if err != nil {panic(err)}
 
-	colQuerier := bson.M{"id": searchTerm.Id}
+	colQuerier := bson.M{"id": favoriteTerm.Id}
 	change := bson.M{"$inc": bson.M{"postcount": count}}
 	err = collection.Update(colQuerier, change)
 	if err != nil {fmt.Print("\nissssues!\n")}

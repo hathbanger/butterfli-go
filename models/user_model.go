@@ -47,14 +47,10 @@ func NewUser(username string, password string) *User {
 func (u *User) Save() error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	err = collection.Insert(&User{
 		Id: u.Id,
@@ -62,9 +58,7 @@ func (u *User) Save() error {
 		Username: u.Username,
 		Password: u.Password,
 		PostIds: u.PostIds})
-	if err != nil {
-		return err
-	}
+	if err != nil {return err}
 
 	return nil
 }
@@ -72,14 +66,10 @@ func (u *User) Save() error {
 func FindUser(username string) (User, error) {
 	session, err := store.ConnectToDb()
 	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	user := User{}
 	err = collection.Find(bson.M{"username": username}).One(&user)
@@ -90,43 +80,16 @@ func FindUser(username string) (User, error) {
 	return user, err
 }
 
-func (u *User) FindAccountByTitle(title string) (*Account, error) {
-	session, err := store.ConnectToDb()
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-	collection, err := store.ConnectToAccountsCollection(session, "accounts")
-	if err != nil {
-		//panic(err)
-		return &Account{}, err
-	}
-
-	account := Account{}
-	err = collection.Find(bson.M{"username": u.Username, "title": title}).One(&account)
-	if err != nil {
-		panic(err)
-	}
-
-	return &account, err
-}
-
 
 func GetAllUsers() ([]*User, error){
-
 	session, err := store.ConnectToDb()
 	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	collection, err := store.ConnectToCollection(session, "users", []string{"users"})
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	users := []*User{}
-
 	err = collection.Find(nil).All(&users)
 
 	return users, err

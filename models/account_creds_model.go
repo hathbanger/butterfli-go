@@ -1,14 +1,7 @@
 package models
 
 import (
-	//"encoding/json"
-
-	//"labix.org/v2/mgo"
 	"gopkg.in/mgo.v2/bson"
-	//"log"
-	//"sync"
-	//"fmt"
-	//"time"
 	"github.com/butterfli-go/store"
 	"time"
 	"fmt"
@@ -41,17 +34,12 @@ func NewAccountCreds(username string, accountId string, consumerKey string, cons
 }
 
 func (a *AccountCreds) Save() error {
-	fmt.Print("saving! from the top ")
 	session, err := store.ConnectToDb()
 	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"account", "username"})
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
 
 	accountCreds := &AccountCreds{
 		Id: a.Id,
@@ -72,55 +60,31 @@ func (a *AccountCreds) Save() error {
 func FindAccountCredsById(accountCredsId string) (*AccountCreds, error) {
 	session, err := store.ConnectToDb()
 	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {panic(err)}
+
 	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"imgurl"})
-	if err != nil {
-		//panic(err)
-		return &AccountCreds{}, err
-	}
+	if err != nil {panic(err)}
 
 	accountCreds := AccountCreds{}
 	err = collection.Find(bson.M{"id": bson.ObjectIdHex(accountCredsId)}).One(&accountCreds)
-	if err != nil {
-		panic(err)
-		//return &post, err
-	}
+	if err != nil {panic(err)}
 
 	return &accountCreds, err
 }
 
 
 func FindAccountCredsByAccountId(accountId string) (*AccountCreds, error) {
-	fmt.Print("\n starting FindAccountCredsByAccountId \n")
 	session, err := store.ConnectToDb()
-	fmt.Print("\n k session is good: ")
 	defer session.Close()
-	fmt.Print(accountId)
-	if err != nil {
-		fmt.Print("\n issues connecting to DB :(\n")
-		panic(err)
-	}
-	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"account", "username"})
+	if err != nil {panic(err)}
 
-	if err != nil {
-		//panic(err)
-		fmt.Print("\n we couldn't find the Account Creds :(\n")
-		return &AccountCreds{}, err
-	}
+	fmt.Print("bout to do FindAccountCredsByAccountId!")
+	collection, err := store.ConnectToCollection(session, "accountCreds", []string{"account", "username"})
+	if err != nil {panic(err)}
 
 	accountCreds := AccountCreds{}
-	fmt.Print("accountId: ")
-	fmt.Print(accountId)
-	fmt.Print("\n")
 	err = collection.Find(bson.M{"account": accountId}).One(&accountCreds)
-	if err != nil {
-		fmt.Print("\n issues finding the accountId :(\n")
-		return &accountCreds, err
-	}
+	if err != nil {panic(err)}
 
-	fmt.Print("found! \n")
-	fmt.Print(accountCreds)
 	return &accountCreds, err
 }
